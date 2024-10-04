@@ -1,16 +1,20 @@
-# utl-output-first-n-observations-and-summarize-the-remaining-n-plus-one-observations-sql-r-python
-Output first n observations and summarize the remaining n plus one observations sql sas r python
-    %let pgm=utl-output-first-n-observations-and-summarize-the-remaining-n-plus-one-observations-sql-r-python;
+    %let pgm=utl-output-first-n-observations-and-summarize-the-remaining-n-plus-one-observations-sas-r-python;
 
-    Output first n observations and summarize the remaining n plus one observations sql sas r python
+    Output first n observations and summarize the remaining n plus one observations sas r python
 
        SOLUTIONS
 
-         1 SAS defer table (solution not easily done in sas sql)
-         2 r dplyr
-         3 r sql
-         4 r nested sql
-         5 python sql
+         00 sas datastep no sort
+            Keintz, Mark
+            mkeintz@outlook.com
+
+         0  sas hash (not my strong point)
+
+         1  SAS defer table (solution not easily done in sas sql)
+         2  r dplyr
+         3  r sql
+         4  r nested sql
+         5  python sql
 
     github
     https://tinyurl.com/hhs3js4n
@@ -125,6 +129,115 @@ Output first n observations and summarize the remaining n plus one observations 
     E  450         0.05
     ;;;;
     run;quit;
+
+    /*___      _       _            _                                           _
+     / _ \  __| | __ _| |_ __ _ ___| |_ ___ _ __    _ __   ___   ___  ___  _ __| |_
+    | | | |/ _` |/ _` | __/ _` / __| __/ _ \ `_ \  | `_ \ / _ \ / __|/ _ \| `__| __|
+    | |_| | (_| | (_| | || (_| \__ \ ||  __/ |_) | | | | | (_) |\__ \ (_) | |  | |_
+     \___/ \__,_|\__,_|\__\__,_|___/\__\___| .__/  |_| |_|\___/ |___/\___/|_|   \__|
+                                           |_|
+    */
+
+
+    %let n=3;
+
+    data want (keep=company market_share var1);
+      set sd1.have(rename=employees=var1) end=end_of_have;
+      array comp {&N} $19 _temporary_ ;
+      array shrs {&N}     _temporary_ ;
+      array v1   {&N}     _temporary_ ;
+      retain   rnk&N . ;
+      total + market_share;
+      totalv1 + var1;
+      if market_share>rnk&N then do;
+        if _n_<=&N then i=_n_;
+        else i=whichn(rnk&N,of shrs{*});
+        comp{i} = company;
+        shrs{i} = market_share;
+        v1{i} = var1;
+        if _n_>=&N then rnk&N = min(of shrs{*});
+      end;
+      if end_of_have;
+      do r=1 to &N;
+        market_share=largest(r,of shrs{*});
+        i=whichn(market_share,of shrs{*});
+        company=comp{i};
+        var1=v1{i};
+        output;
+      end;
+      company=cat('Rest (',_n_-&N,')');
+      market_share = total-sum(of shrs{*});
+      var1 =  (totalv1-sum(of v1{*}))/(_n_-&N);
+      output;
+    run;
+
+     /**************************************************************************************************************************/
+     /*                                                                                                                        */
+     /* p to 40 obs from last table WORK.WANT total obs=4 04OCT2024:14:06:14                                                   */
+     /*                                                                                                                        */
+     /*                           MARKET_                                                                                      */
+     /* bs    COMPANY     VAR1     SHARE                                                                                       */
+     /*                                                                                                                        */
+     /* 1     C            320      0.45                                                                                       */
+     /* 2     D            800      0.25                                                                                       */
+     /* 3     A            150      0.20                                                                                       */
+     /* 4     Rest (2)     325      0.10                                                                                       */
+     /*                                                                                                                        */
+     /**************************************************************************************************************************/
+
+    /*___   ___                    _               _
+     / _ \ / _ \   ___  __ _ ___  | |__   __ _ ___| |__
+    | | | | | | | / __|/ _` / __| | `_ \ / _` / __| `_ \
+    | |_| | |_| | \__ \ (_| \__ \ | | | | (_| \__ \ | | |
+     \___/ \___/  |___/\__,_|___/ |_| |_|\__,_|___/_| |_|
+
+    */
+
+    data tbl_sort(keep=company employees market_share);
+
+        retain rec sum avg recs 0 rest 'THEREST';
+
+        if 0 then set sd1.have nobs=numobs;
+
+        declare hash sortha(dataset: 'sd1.have', ordered: 'd');
+        declare hiter iter('sortha');
+        sortha.definekey('market_share','company');
+        sortha.definedata('company','market_share','employees');
+        sortha.definedone();
+
+        recs=numobs;
+
+        do while (iter.next() = 0);
+           rec=rec+1;
+           if rec <= 3 then do;
+              output tbl_sort;
+           end;
+           else do;
+              avg=avg + employees/(numobs-3);
+              sum=sum + market_share;
+              if rec=numobs then do;
+                 company='THEREST';
+                 market_share=sum;
+                 employees=avg;
+                 output tbl_sort;
+              end;
+           end;
+        end;
+    run;
+
+    /**************************************************************************************************************************/
+    /*                                                                                                                        */
+    /* WORK.TBL_SORT total obs=4                                                                                              */
+    /*                                                                                                                        */
+    /*                                MARKET_                                                                                 */
+    /* Obs    COMPANY    EMPLOYEES     SHARE                                                                                  */
+    /*                                                                                                                        */
+    /*  1     C             320         0.45                                                                                  */
+    /*  2     D             800         0.25                                                                                  */
+    /*  3     A             150         0.20                                                                                  */
+    /*  4     THEREST       325         0.10                                                                                  */
+    /*                                                                                                                        */
+    /**************************************************************************************************************************/
 
     /*                       _       __
     / |  ___  __ _ ___    __| | ___ / _| ___ _ __
@@ -430,4 +543,3 @@ Output first n observations and summarize the remaining n plus one observations 
      \___|_| |_|\__,_|
 
     */
-
