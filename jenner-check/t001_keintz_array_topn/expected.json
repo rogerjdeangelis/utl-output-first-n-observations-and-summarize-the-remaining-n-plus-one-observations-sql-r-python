@@ -1,0 +1,13 @@
+{
+  "_captured_at": "2026-07-23T11:54:00Z",
+  "_captured_run_id": "r_5ada1efbf3674672b91baffa6bfbaac2",
+  "status": "ok",
+  "exit_code": 0,
+  "log_contains": [
+    "NOTE: Read 5 rows from have.",
+    "NOTE: Wrote want (4 rows, 3 columns).",
+    "NOTE: PROC PRINT completed: 4 observations printed, 3 variables"
+  ],
+  "log_does_not_contain": ["ERROR:", "[JENNER-ERROR"],
+  "diagnostics": {"parse_warnings": [], "runtime_warnings": []}
+}
