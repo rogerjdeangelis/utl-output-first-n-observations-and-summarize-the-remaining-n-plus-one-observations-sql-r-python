@@ -1,0 +1,7 @@
+{
+  "bundle": "t001_keintz_array_topn",
+  "source_file": "utl-output-first-n-observations-and-summarize-the-remaining-n-plus-one-observations-sql-r-python.sas",
+  "source_blob_sha": "cc3bc752319bbd9bf65803825fbda5d8868f130f",
+  "source_commit": "e3dd4f8757ee13c643bfef83da9dbb1046f995ad",
+  "notes": "Solution 00 (Keintz array/no-sort method): DATA step that keeps the top &N market-share rows via temporary arrays (whichn/largest/min) and collapses the remainder into a 'Rest (n)' summary row. Verbatim from the upstream 'data want' step; only edit is sd1.have -> have so the library resolves to WORK instead of the author's d:/sd1 path. Sample data is the upstream inline cards4 block (5 rows). Output matches the repo's own documented result: C/D/A then Rest (2) 325 0.10."
+}
